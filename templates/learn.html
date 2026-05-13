@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Learn — SignLingua{% endblock %}
+{% block nav_learn %}active{% endblock %}
+
+{% block content %}
+<div class="learn-page">
+    <!-- Header -->
+    <div class="learn-header">
+        <div>
+            <h1>Lessons</h1>
+            <p class="learn-desc">Select a sign to begin. The AI validates your gesture in real-time.</p>
+        </div>
+        <div class="progress-block">
+            <div class="progress-label">
+                <span>Overall Progress</span>
+                <span class="progress-pct">{{ ((completed / total * 100) | round(0) | int) if total > 0 else 0 }}%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ (completed / total * 100) if total > 0 else 0 }}%"></div>
+            </div>
+            <div class="progress-detail">{{ completed }} of {{ total }} completed</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="letter">Letters</button>
+        <button class="filter-chip" data-filter="number">Numbers</button>
+        <button class="filter-chip" data-filter="special">Special</button>
+        <button class="filter-chip" data-filter="gesture">Gestures</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="lessons-grid" id="lessons-grid">
+        {% for lesson in lessons %}
+        <a href="/learn/{{ lesson.id }}" class="lesson-tile {% if progress[lesson.id] %}done{% endif %}" data-type="{{ lesson.type }}">
+            <div class="tile-check">
+                {% if progress[lesson.id] %}
+                <i data-lucide="check-circle-2" class="check-done"></i>
+                {% else %}
+                <i data-lucide="circle" class="check-pending"></i>
+                {% endif %}
+            </div>
+            <div class="tile-preview">
+                {% if lesson.type == 'gesture' %}
+                <img src="{{ url_for('static', filename='gesture_' + lesson.id + '.png') }}" alt="{{ lesson.display }}" class="tile-img tile-gesture-thumb" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="tile-char-fallback" style="display:none;">{{ lesson.display }}</span>
+                {% else %}
+                <img src="/reference/{{ lesson.id }}" alt="{{ lesson.display }}" class="tile-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span class="tile-char-fallback" style="display:none;">{{ lesson.display }}</span>
+                {% endif %}
+            </div>
+            <span class="tile-name">{{ lesson.display }}</span>
+            <span class="tile-tag">{{ lesson.type }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        const f = this.dataset.filter;
+        document.querySelectorAll('.lesson-tile').forEach(t => {
+            t.style.display = (f === 'all' || t.dataset.type === f) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ lesson.display }} — SignLingua{% endblock %}
+{% block nav_learn %}active{% endblock %}
+
+{% block content %}
+<div class="lesson-page">
+    <!-- Navigation -->
+    <div class="lesson-topbar">
+        {% if prev_id %}
+        <a href="/learn/{{ prev_id }}" class="btn btn-ghost btn-sm"><i data-lucide="chevron-left" class="icon-inline"></i> Previous</a>
+        {% else %}<span></span>{% endif %}
+        <a href="/learn" class="btn btn-ghost btn-sm"><i data-lucide="layout-grid" class="icon-inline"></i> All Lessons</a>
+        {% if next_id %}
+        <a href="/learn/{{ next_id }}" class="btn btn-ghost btn-sm">Next <i data-lucide="chevron-right" class="icon-inline"></i></a>
+        {% else %}<span></span>{% endif %}
+    </div>
+
+    <div class="lesson-body">
+        <!-- Reference Panel -->
+        <div class="panel reference-panel">
+            <div class="panel-header">
+                <i data-lucide="book-open" class="panel-icon"></i>
+                <span>Reference</span>
+            </div>
+            <div class="reference-content">
+                <div class="ref-char">{{ lesson.display }}</div>
+                {% if lesson.type != 'gesture' %}
+                <img src="/reference/{{ lesson.id }}" alt="{{ lesson.display }}" class="ref-image" onerror="this.style.display='none';">
+                <p class="ref-hint">Hold this hand position steady in front of the camera.</p>
+                {% else %}
+                <img src="{{ url_for('static', filename='gesture_' + lesson.id + '.png') }}" alt="{{ lesson.display }} gesture" class="ref-gesture-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <p class="ref-hint" style="display:none; font-size:1.2rem; color: var(--text-1);">Perform the "{{ lesson.display }}" sign as practiced.</p>
+                <p class="ref-hint">This is a dynamic gesture. Perform the motion as shown above.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Camera Panel -->
+        <div class="panel camera-panel">
+            <div class="panel-header">
+                <i data-lucide="video" class="panel-icon"></i>
+                <span>Live Camera</span>
+            </div>
+            <div class="camera-feed">
+                <img id="learn-video" src="{{ url_for('video_feed_learn') }}" alt="Camera Feed">
+            </div>
+            <div id="validation-bar" class="validation-bar pending">
+                <i data-lucide="loader" id="val-icon" class="icon-spin"></i>
+                <span id="val-text">Waiting for your gesture...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-check"><i data-lucide="check-circle-2"></i></div>
+            <h2>Sign Validated</h2>
+            <p>You correctly performed <strong>"{{ lesson.display }}"</strong></p>
+            <div class="modal-actions">
+                <a href="/learn" class="btn btn-ghost">Back to Lessons</a>
+                {% if next_id %}
+                <a href="/learn/{{ next_id }}" class="btn btn-primary">Next Lesson <i data-lucide="arrow-right" class="icon-inline"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let validated = false;
+async function pollLearn() {
+    if (validated) return;
+    try {
+        const res = await fetch('/learn_state');
+        const data = await res.json();
+        if (data.detected && !validated) {
+            validated = true;
+            const bar = document.getElementById('validation-bar');
+            const icon = document.getElementById('val-icon');
+            const text = document.getElementById('val-text');
+            bar.className = 'validation-bar success';
+            icon.outerHTML = '<i data-lucide="check-circle-2" class="val-success-icon"></i>';
+            text.textContent = 'Correct! Well done.';
+            lucide.createIcons();
+            setTimeout(() => {
+                document.getElementById('success-modal').classList.remove('hidden');
+            }, 600);
+        }
+    } catch(e) {}
+}
+setInterval(pollLearn, 300);
+</script>
+{% endblock %}

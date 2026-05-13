@@ -1,0 +1,189 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office'
+xmlns:w='urn:schemas-microsoft-com:office:word'
+xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<style>
+body { font-family: 'Calibri', sans-serif; font-size: 12pt; color: #1a1a1a; margin: 2cm; line-height: 1.6; }
+h1 { font-size: 22pt; color: #1a1a1a; text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 10px; margin-bottom: 5px; }
+h2 { font-size: 16pt; color: #2563eb; margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+h3 { font-size: 13pt; color: #444; margin-top: 20px; }
+.subtitle { text-align: center; color: #555; font-size: 14pt; margin-bottom: 30px; }
+.info-table { width: 100%; margin: 20px 0; }
+.info-table td { padding: 5px 10px; font-size: 11pt; }
+.info-table td:first-child { font-weight: bold; width: 150px; color: #333; }
+table.data { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11pt; }
+table.data th { background: #2563eb; color: white; padding: 8px 12px; text-align: left; }
+table.data td { padding: 8px 12px; border: 1px solid #ddd; }
+table.data tr:nth-child(even) { background: #f8f9fa; }
+.architecture { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 20px; font-family: 'Consolas', monospace; font-size: 10pt; white-space: pre; margin: 15px 0; border-radius: 5px; }
+.highlight { background: #dbeafe; padding: 10px 15px; border-left: 4px solid #2563eb; margin: 15px 0; font-size: 11pt; }
+.screenshot-placeholder { border: 2px dashed #ccc; padding: 40px; text-align: center; color: #999; margin: 15px 0; font-style: italic; }
+.check { color: #22c55e; }
+.page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<h1>Compte Rendu d'Avancement</h1>
+<p class="subtitle">Reconnaissance de la Langue des Signes en Temps Réel<br>avec Intelligence Artificielle</p>
+
+<table class="info-table">
+<tr><td>Étudiant :</td><td>[Votre Nom Complet]</td></tr>
+<tr><td>Filière :</td><td>[Votre Filière]</td></tr>
+<tr><td>Encadrant :</td><td>[Nom du Professeur]</td></tr>
+<tr><td>Date :</td><td>Avril 2026</td></tr>
+</table>
+
+<h2>1. Description du Projet</h2>
+
+<p>Ce projet consiste à développer une <strong>plateforme web intelligente</strong> capable de reconnaître la <strong>langue des signes américaine (ASL)</strong> en temps réel à l'aide de la caméra, et de la traduire en texte et en parole dans <strong>4 langues</strong> (Anglais, Français, Espagnol, Arabe).</p>
+
+<p>Le système utilise une architecture innovante <strong>« Dual-Brain »</strong> (Double Cerveau IA) :</p>
+<ul>
+<li><strong>Cerveau 1 — Random Forest :</strong> Reconnaissance des signes statiques (lettres A-Z, chiffres 0-9, espace, point) avec <strong>100% de précision</strong>.</li>
+<li><strong>Cerveau 2 — LSTM (Réseau de neurones récurrents) :</strong> Reconnaissance des gestes dynamiques (17 mots/phrases) avec <strong>98.7% de précision</strong>.</li>
+</ul>
+
+<h2>2. Technologies Utilisées</h2>
+
+<table class="data">
+<tr><th>Technologie</th><th>Rôle</th></tr>
+<tr><td>Python 3.10</td><td>Langage principal</td></tr>
+<tr><td>TensorFlow / Keras</td><td>Modèle LSTM pour la reconnaissance de gestes dynamiques</td></tr>
+<tr><td>Scikit-Learn</td><td>Modèle Random Forest pour la reconnaissance de lettres statiques</td></tr>
+<tr><td>MediaPipe Holistic</td><td>Extraction de 1662 points clés (mains, corps, visage) en temps réel</td></tr>
+<tr><td>OpenCV</td><td>Capture et traitement du flux vidéo de la caméra</td></tr>
+<tr><td>Flask</td><td>Serveur web backend pour la plateforme</td></tr>
+<tr><td>HTML / CSS / JavaScript</td><td>Interface web professionnelle (frontend)</td></tr>
+<tr><td>Google TTS (gTTS)</td><td>Synthèse vocale dans les 4 langues</td></tr>
+<tr><td>Deep Translator</td><td>Traduction automatique multi-langue</td></tr>
+</table>
+
+<h2>3. Fonctionnalités Réalisées</h2>
+
+<h3>3.1. Détection en Temps Réel</h3>
+<ul>
+<li>Détection de <strong>38 signes statiques</strong> (A-Z, 0-9, espace, point) via Random Forest</li>
+<li>Détection de <strong>17 mots/gestes dynamiques</strong> via LSTM : hello, thanks, I love you, hi, my, name, is, what, how, you, please, sorry, help, yes, no, good, bad</li>
+<li>Construction automatique de <strong>phrases complètes</strong> mot par mot</li>
+<li>Exemple : L'utilisateur peut signer « Hi my name is » en temps réel</li>
+</ul>
+
+<h3>3.2. Traduction Multi-Langue</h3>
+<ul>
+<li>Traduction instantanée en <strong>4 langues</strong> : Anglais, Français, Espagnol, Arabe</li>
+<li>Synthèse vocale native dans chaque langue via Google TTS</li>
+</ul>
+
+<h3>3.3. Plateforme Web Professionnelle</h3>
+<ul>
+<li><strong>Page d'accueil :</strong> Présentation de l'architecture et des statistiques</li>
+<li><strong>Page d'apprentissage :</strong> 55 leçons structurées avec suivi de progression (style Coursera)</li>
+<li><strong>Page de leçon individuelle :</strong> Image de référence + validation du geste par caméra</li>
+<li><strong>Page de pratique libre :</strong> Mode texte libre avec boutons Reset, Delete, Pause, Speak</li>
+<li><strong>Design professionnel :</strong> Interface sombre moderne, icônes SVG, responsive</li>
+</ul>
+
+<h3>3.4. Pipeline d'Entraînement</h3>
+<ul>
+<li>Script de collecte de données pour les lettres (<code>collectImgs.py</code>)</li>
+<li>Script de collecte de données pour les mots (<code>collect_words.py</code>)</li>
+<li>Script de création du dataset (<code>createDataset.py</code>)</li>
+<li>Script d'entraînement du Random Forest (<code>trainClassifier.py</code>)</li>
+<li>Script d'entraînement du LSTM (<code>train_lstm.py</code>)</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2>4. Architecture Technique</h2>
+
+<div class="architecture">
+              ┌──────────────────────────────────────┐
+              │        CAMÉRA (DroidCam/iPhone)       │
+              └──────────────┬───────────────────────┘
+                             │
+                     MediaPipe Holistic
+                  (1662 points clés extraits)
+                      │              │
+           ┌──────────┘              └──────────┐
+           ▼                                    ▼
+   ┌───────────────┐                  ┌───────────────┐
+   │  Cerveau 1    │                  │  Cerveau 2    │
+   │ Random Forest │                  │    LSTM       │
+   │  (model.p)    │                  │ (action.h5)   │
+   │               │                  │               │
+   │ Lettres A-Z   │                  │  17 mots      │
+   │ Chiffres 0-9  │                  │  dynamiques   │
+   │ Espace, Point │                  │               │
+   │               │                  │               │
+   │ Précision:    │                  │ Précision:    │
+   │   100%        │                  │   98.7%       │
+   └───────┬───────┘                  └───────┬───────┘
+           └──────────────┬───────────────────┘
+                          ▼
+               Construction de Phrase
+                          │
+               ┌──────────┼──────────┐
+               ▼          ▼          ▼
+          Traduction    Texte   Synthèse Vocale
+          (4 langues)  Affiché    (gTTS)
+                          │
+               ┌──────────┴──────────┐
+               │   Plateforme Web    │
+               │      (Flask)        │
+               └─────────────────────┘
+</div>
+
+<h2>5. Résultats</h2>
+
+<table class="data">
+<tr><th>Modèle</th><th>Données d'entraînement</th><th>Précision</th></tr>
+<tr><td>Random Forest (lettres)</td><td>38 classes × 300 images = 11,400 images</td><td><strong>100%</strong></td></tr>
+<tr><td>LSTM (mots/gestes)</td><td>17 classes × 30 séquences × 30 frames = 15,300 frames</td><td><strong>98.7%</strong></td></tr>
+</table>
+
+<div class="highlight">
+<strong>Total :</strong> 55 signes reconnaissables (38 statiques + 17 dynamiques), traduits en 4 langues avec synthèse vocale.
+</div>
+
+<h2>6. Difficultés Rencontrées et Solutions</h2>
+
+<table class="data">
+<tr><th>Difficulté</th><th>Solution</th></tr>
+<tr><td>Caméra DroidCam de mauvaise qualité</td><td>Réduction des seuils de détection MediaPipe (0.5 → 0.3)</td></tr>
+<tr><td>Première tentative LSTM : 7.8% de précision</td><td>Normalisation Z-score, activation tanh, Dropout, BatchNorm → 98.7%</td></tr>
+<tr><td>Détection du geste « Hello » échouait</td><td>Abaissement du seuil de confiance spécifique (0.85 → 0.55)</td></tr>
+<tr><td>Gel de la caméra pendant la traduction</td><td>Traduction déplacée vers des threads asynchrones</td></tr>
+</table>
+
+<h2>7. Captures d'Écran</h2>
+
+<div class="screenshot-placeholder">
+[Insérer capture d'écran : Page d'accueil de la plateforme]
+</div>
+
+<div class="screenshot-placeholder">
+[Insérer capture d'écran : Page d'apprentissage avec grille des leçons]
+</div>
+
+<div class="screenshot-placeholder">
+[Insérer capture d'écran : Page de pratique avec phrase détectée]
+</div>
+
+<h2>8. Prochaines Étapes</h2>
+<ul>
+<li>Optimisation de la détection en temps réel</li>
+<li>Tests en conditions réelles (éclairage varié, différents utilisateurs)</li>
+<li>Déploiement sur GitHub avec documentation README</li>
+<li>Préparation de la soutenance finale</li>
+</ul>
+
+<h2>9. Conclusion</h2>
+
+<p>Le projet est dans un état d'avancement très avancé. Les deux modèles d'IA sont entraînés et fonctionnels avec des précisions de <strong>100%</strong> et <strong>98.7%</strong>. La plateforme web est entièrement développée avec une interface professionnelle. Les prochaines étapes se concentrent sur l'optimisation et la préparation de la présentation finale.</p>
+
+</body>
+</html>

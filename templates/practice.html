@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Practice — SignLingua{% endblock %}
+{% block nav_practice %}active{% endblock %}
+
+{% block content %}
+<div class="practice-page">
+    <div class="practice-grid">
+        <!-- Video Column -->
+        <div class="practice-left">
+            <div class="panel video-panel">
+                <div class="panel-header">
+                    <i data-lucide="video" class="panel-icon"></i>
+                    <span>Live Feed</span>
+                </div>
+                <div class="video-feed-wrapper">
+                    <img id="practice-video" src="{{ url_for('video_feed') }}" alt="Camera Feed">
+                </div>
+            </div>
+            <div class="controls-row">
+                <button class="ctrl-btn ctrl-danger" onclick="sendCommand('reset')" title="Reset">
+                    <i data-lucide="trash-2"></i><span>Reset</span>
+                </button>
+                <button class="ctrl-btn ctrl-warn" onclick="sendCommand('delete')" title="Delete last character">
+                    <i data-lucide="delete"></i><span>Delete</span>
+                </button>
+                <button class="ctrl-btn ctrl-neutral" id="pause-btn" onclick="sendCommand('pause')" title="Pause / Resume">
+                    <i data-lucide="pause"></i><span>Pause</span>
+                </button>
+                <button class="ctrl-btn ctrl-success" onclick="sendCommand('speak')" title="Speak sentence aloud">
+                    <i data-lucide="volume-2"></i><span>Speak</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Output Column -->
+        <div class="practice-right">
+            <!-- Language -->
+            <div class="panel lang-panel">
+                <div class="panel-header">
+                    <i data-lucide="globe" class="panel-icon"></i>
+                    <span>Translation Language</span>
+                </div>
+                <div class="lang-grid">
+                    <button class="lang-opt active" data-lang="English">English</button>
+                    <button class="lang-opt" data-lang="French">Français</button>
+                    <button class="lang-opt" data-lang="Spanish">Español</button>
+                    <button class="lang-opt" data-lang="Arabic">العربية</button>
+                </div>
+            </div>
+
+            <!-- Detected -->
+            <div class="panel data-panel">
+                <div class="data-label">Detected Sign</div>
+                <div class="data-value data-accent" id="det-sign">N/A</div>
+            </div>
+
+            <!-- Word -->
+            <div class="panel data-panel">
+                <div class="data-label">Word Buffer</div>
+                <div class="data-value data-warm" id="det-word">&mdash;</div>
+            </div>
+
+            <!-- Sentence -->
+            <div class="panel data-panel data-panel-grow">
+                <div class="data-label">Translated Output</div>
+                <div class="data-value data-green data-sentence" id="det-sentence">&mdash;</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Language buttons
+document.querySelectorAll('.lang-opt').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        changeLanguage(this.dataset.lang);
+    });
+});
+
+// Poll state
+setInterval(async () => {
+    try {
+        const res = await fetch('/state');
+        const d = await res.json();
+        setVal('det-sign', d.alphabet || 'N/A');
+        setVal('det-word', d.word || '\u2014');
+        setVal('det-sentence', d.sentence.trim() || '\u2014');
+        document.getElementById('pause-btn').querySelector('span').textContent = d.is_paused ? 'Resume' : 'Pause';
+    } catch(e) {}
+}, 200);
+
+function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el.textContent !== val) {
+        el.textContent = val;
+        el.classList.add('flash');
+        setTimeout(() => el.classList.remove('flash'), 250);
+    }
+}
+</script>
+{% endblock %}

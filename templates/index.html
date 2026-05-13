@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}SignLingua — Learn Sign Language with AI{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <p class="hero-eyebrow">Dual-Brain AI Platform</p>
+        <h1 class="hero-title">Learn Sign Language.<br><span class="text-gradient">Powered by AI.</span></h1>
+        <p class="hero-desc">Real-time hand tracking with LSTM neural networks and Random Forest classifiers. Practice ASL letters, numbers, and phrases with instant feedback, then translate into 4 languages.</p>
+        <div class="hero-actions">
+            <a href="/learn" class="btn btn-primary btn-lg">Start Learning <i data-lucide="arrow-right" class="icon-inline"></i></a>
+            <a href="/practice" class="btn btn-ghost btn-lg">Open Practice Mode</a>
+        </div>
+    </div>
+
+    <div class="hero-metrics">
+        <div class="metric-card">
+            <div class="metric-value">55</div>
+            <div class="metric-label">Signs Available</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">4</div>
+            <div class="metric-label">Languages</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value">{{ completed }}<span class="metric-dim">/{{ total }}</span></div>
+            <div class="metric-label">Completed</div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture -->
+<section class="section">
+    <div class="section-header">
+        <p class="section-eyebrow">Architecture</p>
+        <h2 class="section-title">How It Works</h2>
+    </div>
+    <div class="arch-grid">
+        <div class="arch-card">
+            <div class="arch-icon"><i data-lucide="brain"></i></div>
+            <h3>Dual-Brain Detection</h3>
+            <p>LSTM Neural Network handles dynamic phrase gestures while a Random Forest classifier recognizes 38 static hand signs with high precision.</p>
+        </div>
+        <div class="arch-card">
+            <div class="arch-icon"><i data-lucide="scan-eye"></i></div>
+            <h3>Real-Time Tracking</h3>
+            <p>MediaPipe Holistic tracks 21 hand landmarks, 33 body points, and 468 facial keypoints at 30+ FPS for accurate gesture recognition.</p>
+        </div>
+        <div class="arch-card">
+            <div class="arch-icon"><i data-lucide="languages"></i></div>
+            <h3>Multi-Language Output</h3>
+            <p>Detected signs are instantly translated to English, French, Spanish, or Arabic via Google Translator with native text-to-speech synthesis.</p>
+        </div>
+        <div class="arch-card">
+            <div class="arch-icon"><i data-lucide="graduation-cap"></i></div>
+            <h3>Structured Learning</h3>
+            <p>Coursera-inspired lesson system with individual gesture validation, progress tracking, and reference images from real training data.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Tech Stack -->
+<section class="section">
+    <div class="section-header">
+        <p class="section-eyebrow">Technology</p>
+        <h2 class="section-title">Built With</h2>
+    </div>
+    <div class="tech-row">
+        <div class="tech-pill">Python</div>
+        <div class="tech-pill">TensorFlow</div>
+        <div class="tech-pill">MediaPipe</div>
+        <div class="tech-pill">Scikit-Learn</div>
+        <div class="tech-pill">Flask</div>
+        <div class="tech-pill">OpenCV</div>
+        <div class="tech-pill">Google TTS</div>
+        <div class="tech-pill">Deep Translator</div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SignLingua — ASL Learning Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <meta name="description" content="Professional ASL Sign Language learning platform powered by Dual-Brain AI.">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 1 1 3 0m-3 6a1.5 1.5 0 0 0-3 0v2a7.5 7.5 0 0 0 15 0v-5a1.5 1.5 0 0 0-3 0m-6-2V11m0-5.5v-1a1.5 1.5 0 0 1 3 0v1.5m0 0V11m0-5.5a1.5 1.5 0 0 1 3 0V11"/></svg>
+                <span>Sign<span class="logo-accent">Lingua</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link {% block nav_home %}{% endblock %}">Home</a>
+                <a href="/learn" class="nav-link {% block nav_learn %}{% endblock %}">Learn</a>
+                <a href="/practice" class="nav-link {% block nav_practice %}{% endblock %}">Practice</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <span>SignLingua</span>
+            <span class="footer-sep">&middot;</span>
+            <span>Dual-Brain AI Architecture</span>
+            <span class="footer-sep">&middot;</span>
+            <span>LSTM + Random Forest + MediaPipe</span>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>lucide.createIcons();</script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
