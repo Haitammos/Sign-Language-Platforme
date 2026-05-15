@@ -266,7 +266,7 @@ def generate_practice_frames():
 
     mp_holistic = mp.solutions.holistic
     mp_drawing = mp.solutions.drawing_utils
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     with mp_holistic.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3, model_complexity=1) as holistic:
         while True:
@@ -440,7 +440,7 @@ def generate_learn_frames():
 
     mp_holistic = mp.solutions.holistic
     mp_drawing = mp.solutions.drawing_utils
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     with mp_holistic.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3, model_complexity=1) as holistic:
         while True:
