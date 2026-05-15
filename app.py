@@ -301,7 +301,13 @@ def generate_practice_frames():
                 if len(practice_sequence) > 30:
                     practice_sequence = practice_sequence[-30:]
 
-                if len(practice_sequence) == 30:
+                current_time = time.time()
+
+                # Initialize cooldown tracker
+                if not hasattr(generate_practice_frames, '_lstm_cooldown'):
+                    generate_practice_frames._lstm_cooldown = 0
+
+                if len(practice_sequence) == 30 and current_time > generate_practice_frames._lstm_cooldown:
                     input_seq = np.array(practice_sequence)
                     if norm_mean is not None:
                         input_seq = (input_seq - norm_mean) / norm_std
@@ -331,6 +337,7 @@ def generate_practice_frames():
                             practice_sequence.clear()
                             generate_practice_frames._last_word = None
                             generate_practice_frames._word_count = 0
+                            generate_practice_frames._lstm_cooldown = current_time + 1.5
                     else:
                         # Reset stabilization on neutral/low confidence
                         if hasattr(generate_practice_frames, '_last_word'):
