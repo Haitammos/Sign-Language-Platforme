@@ -1,126 +1,167 @@
-## **Overview**  
-This project, *Sign Language to Speech Conversion using Machine Learning*, enables the recognition of American Sign Language (ASL) gestures and converts them into spoken words or sentences. It is designed to bridge the communication gap for individuals who use sign language. 
+# ASL Sign Language Recognition Platform
 
-🔗[Video Demonstration on LinkedIn](https://www.linkedin.com/posts/tanmay-jivnani_capstoneproject-machinelearning-signlanguagerecognition-activity-7267174165739184128-VdZB?utm_source=share&utm_medium=member_desktop)
-
-
-## 🎯 Features
-
-- **Real-Time Recognition**: Converts live webcam feed into recognized gestures.
-- **Robust Prediction**: Implements stabilization for accurate gesture recognition.
-- **Word and Sentence Formation**: Automatically forms words and sentences with proper segmentation (space and full stop gestures).
-- **Text-to-Speech Conversion**: Speaks out the recognized text for better accessibility.
-- **User-Friendly GUI**: Displays the current alphabet, word, and sentence in real time.
-
-## **Project Highlights**  
-- **Custom Dataset Creation**:  
-  We built this project from the ground up by capturing and preparing our **custom dataset** of ASL gestures, covering A-Z alphabets, 0-9 digits, a gesture for **space**, and one for **full stop**.
-  
-  ![ASL Characters](/ReadmeAssets/The-26-letters-and-10-digits-of-American-Sign-Language-ASL.png)
-  The 26 letters and 10 digits of American Sign Language (ASL)
-  
-  ![J](/ReadmeAssets/J.jpg)
-  Sign for J
-
-  ![Z](/ReadmeAssets/Z.jpg)
-  Sign for Z
-
-  ![SPACE](/ReadmeAssets/Space.jpg)
-  Sign for SPACE.
-  
-  ![Fullstop](/ReadmeAssets/Fullstop.jpg)
-  Sign for FULLSTOP.
-
-- **Pre-Trained Model Included**:  
-  A **pre-trained model** is provided to allow users to immediately start using the system.  
-- **Flexibility**:  
-  Users can also train their own custom models using the provided scripts and instructions.
-
-## 🔧 Tech Stack
-- **Languages**: Python
-- **Libraries**: MediaPipe, OpenCV, Tkinter, Pyttsx3, Scikit-learn
-- **Machine Learning Model**: Random Forest Classifier
+> **Real-time ASL sign language recognition using Dual-Brain AI architecture — LSTM for dynamic gesture words + Random Forest for static letters.**
 
 ---
 
-## **Usage**  
-### **Option 1: Use the Pre-Trained Model**  
-You can directly use the pre-trained model (`model.p`) provided in this repository:  
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-username/sign-language-to-speech.git
-   cd sign-language-to-speech
-   ```
+## Features
 
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the `main.py` script.  
-4. Ensure your webcam is functional, and the `model.p` file is in the same directory.  
-
-### **Option 2: Train Your Own Model**  
-To create and train a custom model:  
-1. **Collect a Custom Dataset**:  
-   - Run `collectImgs.py` to capture gesture images using your webcam.  
-   - Modify the `number_of_classes` and `dataset_size` variables in the script if needed.  
-
-2. **Process the Dataset**:  
-   - Use `createDataset.py` to extract features from the collected images and save them in a `data.pickle` file.  
-
-3. **Train the Model**:  
-   - Train a new model using `trainClassifier.py`. It will replace the old one.
+- **55 Signs Detected** — 26 letters (A-Z), 10 digits (0-9), space, dot, and 17 gesture words
+- **17 Dynamic Gesture Words** — hello, thanks, iloveyou, hi, my, name, is, what, how, you, please, sorry, help, yes, no, good, bad
+- **Full Phrase Detection** — Sign "Hello my name is Haitam" in real-time (gestures + letter spelling)
+- **4-Language Translation** — English, French, Spanish, Arabic + Text-to-Speech
+- **Professional Web Platform** — Flask-based with learning mode, practice mode, and progress tracking
+- **55 Interactive Lessons** — Coursera-style learning with camera validation
 
 ---
 
-## **How the Project Was Built**  
-1. **Dataset Collection**  
-   - A custom dataset was created using the `collectImgs.py` script.  
-   - For each gesture, 100 images were captured, ensuring diverse angles and lighting conditions for robust training.  
-   - The dataset includes **38 classes**, representing:  
-     - 26 alphabets (A-Z)  
-     - 10 digits (0-9)  
-     - A gesture for **space**  
-     - A gesture for **full stop**  
+## Architecture
 
-2. **Feature Extraction and Preprocessing**  
-   - The collected images were processed using **MediaPipe**, extracting 21 key landmarks for each hand.  
-   - Each landmark was converted into a normalized 2D coordinate (x, y), resulting in **42 features per sample**.  
-   - The preprocessed data was saved as a `pickle` file using the `createDataset.py` script.  
-
-3. **Model Training**  
-   - A **Random Forest Classifier** was used for training, offering high accuracy with fast training times.  
-   - The dataset was split into training and testing sets (80-20 ratio).  
-   - Training results showed high accuracy, ensuring reliable gesture recognition.  
-
-4. **Inference and Real-Time Conversion**  
-   - The trained model was integrated into a real-time system using `main.py`.  
-   - The system uses a **stabilization buffer** to improve gesture detection and avoids misclassifications.  
-   - A **Text-to-Speech (TTS)** engine was used to convert recognized gestures into audible speech.  
-   - A user-friendly **GUI** was built with **Tkinter** for better interaction.
-
----
-
-## **Future Enhancements**  
-- Expand recognition to include **dynamic gestures**.  
-- Support for additional sign languages.  
-- Deploy the system as a mobile or web application for greater accessibility.
-- Improve model accuracy with advanced deep learning techniques.
-
----
-
-## **Suggestions and Collaborations**  
-We believe that collaboration is key to innovation. If you have suggestions for improving this project, new ideas, or wish to collaborate on expanding its capabilities, we’d love to hear from you! Feel free to reach out via issues or pull requests on GitHub.
+```
+              ┌────────────────────────────────┐
+              │     Camera (DroidCam/Webcam)    │
+              └──────────────┬─────────────────┘
+                             │
+                     MediaPipe Holistic
+                  (1662 keypoints extracted)
+                      │              │
+           ┌──────────┘              └──────────┐
+           ▼                                    ▼
+   ┌───────────────┐                  ┌───────────────┐
+   │  Brain 1      │                  │  Brain 2      │
+   │ Random Forest │                  │    LSTM       │
+   │  (model.p)    │                  │ (action.h5)   │
+   │               │                  │               │
+   │ Letters A-Z   │                  │  17 gesture   │
+   │ Digits 0-9    │                  │  words        │
+   │ Space, Dot    │                  │               │
+   │               │                  │               │
+   │ Accuracy:     │                  │ Accuracy:     │
+   │   100%        │                  │   98.7%       │
+   └───────┬───────┘                  └───────┬───────┘
+           └──────────────┬───────────────────┘
+                          ▼
+               Phrase Construction
+                          │
+               ┌──────────┼──────────┐
+               ▼          ▼          ▼
+          Translation   Text     Text-to-Speech
+          (4 langs)   Display      (gTTS)
+```
 
 ---
 
-## **Contributors**  
-1. **[Tanmay Jivnani](https://github.com/tanmayJivnani)**
-2. **[Shravani Verma](https://github.com/Shravknowscoding)**
-3. **[Aishwarya Shendkar](https://github.com/aishwaryaa2603)**
+## Quick Start
+
+### 1. Clone & Setup
+```bash
+git clone https://github.com/Haitammos/Sign-Language-Platforme.git
+cd Sign-Language-Platforme
+python -m venv venv
+.\venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+```
+
+### 2. Run the Web Platform
+```bash
+python app.py
+```
+Open **http://localhost:5000** in your browser.
+
+### 3. Run the Demo (Guided)
+```bash
+python demo_hello_my_name_is.py
+```
+Follow the on-screen instructions. Press **Q** to confirm each sign.
 
 ---
 
-## 📝 License
+## Project Structure
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```
+├── app.py                    # Flask web server (main platform)
+├── main.py                   # Standalone tkinter version
+├── demo_hello_my_name_is.py  # Guided phrase demo
+├── diagnostic.py             # Real-time detection diagnostic tool
+│
+├── model.p                   # Random Forest model (letters)
+├── action.h5                 # LSTM model (gesture words)
+├── norm_mean.npy             # LSTM normalization params
+├── norm_std.npy              # LSTM normalization params
+│
+├── collect_words.py          # Collect LSTM training data
+├── collect_neutral.py        # Collect neutral class data
+├── train_lstm.py             # Train LSTM model
+├── collectImgs.py            # Collect RF training images
+├── createDataset.py          # Create RF dataset
+├── trainClassifier.py        # Train RF model
+│
+├── templates/                # Web UI templates
+│   ├── base.html
+│   ├── index.html            # Landing page
+│   ├── learn.html            # Learning grid
+│   ├── lesson.html           # Individual lesson
+│   └── practice.html         # Free practice mode
+│
+├── static/                   # CSS, JS, gesture images
+│   ├── style.css
+│   ├── script.js
+│   └── gesture_*.png
+│
+└── requirements.txt
+```
+
+---
+
+## Technologies
+
+| Technology | Purpose |
+|---|---|
+| Python 3.10 | Core language |
+| TensorFlow / Keras | LSTM model for dynamic gestures |
+| Scikit-Learn | Random Forest model for static signs |
+| MediaPipe Holistic | Real-time hand/body/face tracking |
+| OpenCV | Camera capture & video processing |
+| Flask | Web server |
+| gTTS + Pygame | Text-to-speech in 4 languages |
+| Deep Translator | Multi-language translation |
+
+---
+
+## How to Retrain Models
+
+### Retrain LSTM (gesture words)
+```bash
+python collect_words.py      # Record 30 sequences per word
+python collect_neutral.py    # Record neutral class (sit still)
+python train_lstm.py         # Train and save action.h5
+```
+
+### Retrain Random Forest (letters)
+```bash
+python collectImgs.py        # Capture hand images
+python createDataset.py      # Extract features
+python trainClassifier.py    # Train and save model.p
+```
+
+---
+
+## Requirements
+
+```
+flask
+mediapipe
+tensorflow
+opencv-python
+scikit-learn
+numpy
+gtts
+pygame
+deep-translator
+```
+
+---
+
+## License
+
+MIT License
