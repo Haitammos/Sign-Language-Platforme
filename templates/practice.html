@@ -29,6 +29,9 @@
                 <button class="ctrl-btn ctrl-success" onclick="sendCommand('speak')" title="Speak sentence aloud">
                     <i data-lucide="volume-2"></i><span>Speak</span>
                 </button>
+                <button class="ctrl-btn ctrl-neutral" id="cam-btn" onclick="toggleCamera()" title="Camera On/Off">
+                    <i data-lucide="video-off"></i><span>Camera</span>
+                </button>
             </div>
         </div>
 
@@ -100,6 +103,21 @@ function setVal(id, val) {
         el.classList.add('flash');
         setTimeout(() => el.classList.remove('flash'), 250);
     }
+}
+
+let camOn = true;
+function toggleCamera() {
+    const vid = document.getElementById('practice-video');
+    const btn = document.getElementById('cam-btn');
+    camOn = !camOn;
+    if (camOn) {
+        vid.src = '/video_feed';
+        btn.querySelector('span').textContent = 'Camera';
+    } else {
+        vid.src = '';
+        btn.querySelector('span').textContent = 'Start';
+    }
+    lucide.createIcons();
 }
 </script>
 {% endblock %}

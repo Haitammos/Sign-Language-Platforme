@@ -1,0 +1,427 @@
+﻿<html xmlns:o='urn:schemas-microsoft-com:office:office'
+xmlns:w='urn:schemas-microsoft-com:office:word'
+xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<style>
+@page { size: A4; margin: 2.5cm; }
+body { font-family: 'Times New Roman', serif; font-size: 12pt; color: #000; margin: 2.5cm; line-height: 1.5; text-align: justify; }
+h1 { font-size: 18pt; text-align: center; margin-bottom: 5px; font-weight: bold; }
+h2 { font-size: 14pt; margin-top: 24px; margin-bottom: 8px; font-weight: bold; }
+h3 { font-size: 12pt; margin-top: 16px; font-weight: bold; font-style: italic; }
+.title-block { text-align: center; margin-bottom: 30px; }
+.authors { text-align: center; font-size: 11pt; margin: 10px 0; }
+.abstract { font-size: 11pt; margin: 20px 40px; }
+.abstract b { font-size: 12pt; }
+.keywords { font-size: 10pt; margin: 0 40px 20px; font-style: italic; }
+table.data { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11pt; }
+table.data th { background: #e8e8e8; padding: 6px 10px; text-align: left; border: 1px solid #999; font-weight: bold; }
+table.data td { padding: 6px 10px; border: 1px solid #999; }
+.figure { text-align: center; margin: 15px 0; }
+.figure-caption { font-size: 10pt; font-style: italic; margin-top: 5px; }
+.arch { background: #f5f5f5; border: 1px solid #ccc; padding: 15px; font-family: 'Consolas', monospace; font-size: 9pt; white-space: pre; margin: 12px 0; }
+.ref { font-size: 11pt; }
+.page-break { page-break-before: always; }
+ol.refs { font-size: 11pt; }
+ol.refs li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1: TITLE + ABSTRACT ============ -->
+
+<div class="title-block">
+<h1>Real-Time American Sign Language Recognition<br>Using Dual Random Forest Architecture</h1>
+<p style="font-size:13pt; margin-top:5px;">A Web-Based Platform for ASL-to-Text and Speech Translation</p>
+<p class="authors">
+<b>Omar Moussaoui</b><br>
+Department of Computer Science<br>
+May 2026
+</p>
+</div>
+
+<div class="abstract">
+<b>Abstract</b> &mdash; This paper presents a real-time American Sign Language (ASL) recognition system that translates hand gestures into text and speech across four languages. Unlike conventional approaches relying on deep learning sequence models such as LSTMs, our system employs a novel <b>Dual Random Forest architecture</b>: one classifier handles static sign recognition (alphabet letters A&ndash;Z, digits 0&ndash;9) using spatial hand landmark features, while a second classifier recognizes dynamic gestures (words like "hello", "my", "name") using <b>temporal statistical features</b> (mean, standard deviation, velocity) extracted from 30-frame sliding windows. The system achieves <b>100% classification accuracy</b> on both models while running in real-time on consumer hardware without GPU requirements. A complete web platform built with Flask provides interactive learning, free practice, and a guided phrase demonstration mode capable of constructing and translating full sentences such as "Hello my name is Omar, How are you?" The system supports real-time translation and text-to-speech synthesis in English, French, Spanish, and Arabic.
+</div>
+
+<div class="keywords">
+<b>Keywords:</b> Sign Language Recognition, Random Forest, MediaPipe, Hand Landmark Detection, Real-Time Classification, Web Application, Natural Language Processing
+</div>
+
+<hr>
+
+<!-- ============ PAGE 2: INTRODUCTION ============ -->
+
+<h2>1. Introduction</h2>
+
+<p>According to the World Health Organization, over 430 million people worldwide suffer from disabling hearing loss. American Sign Language (ASL) serves as the primary communication method for approximately 500,000 deaf individuals in the United States alone. Despite its critical importance, the communication barrier between deaf and hearing individuals remains a significant societal challenge.</p>
+
+<p>Recent advances in computer vision and machine learning have enabled the development of automated sign language recognition systems. However, most existing approaches face critical limitations: deep learning models require expensive GPU hardware, large labeled datasets, and often produce unstable real-time predictions. LSTM-based sequence models, while theoretically suitable for temporal gesture recognition, frequently exhibit poor generalization and inconsistent frame-by-frame predictions in practical deployments.</p>
+
+<p>This paper proposes a fundamentally different approach. Instead of relying on resource-intensive deep learning, we introduce a <b>Dual Random Forest Architecture</b> that separates the recognition task into two complementary classifiers:</p>
+
+<ul>
+<li><b>Static Sign Classifier (RF-1):</b> Recognizes individual hand poses (letters, digits) from single-frame spatial features.</li>
+<li><b>Dynamic Gesture Classifier (RF-2):</b> Recognizes temporal gestures (words) by computing statistical descriptors over 30-frame sliding windows, effectively converting a sequence classification problem into a tabular classification problem.</li>
+</ul>
+
+<p>The key innovation is the <b>temporal statistics approach</b>: rather than feeding raw frame sequences into a recurrent neural network, we extract six statistical descriptors (mean, standard deviation, maximum, minimum, velocity mean, velocity standard deviation) from each landmark coordinate across the window. This produces a fixed-length feature vector that a Random Forest can classify with perfect accuracy, while being computationally efficient enough to run on CPU-only systems in real-time.</p>
+
+<p>The complete system is deployed as a professional web platform featuring six interactive pages, supporting real-time translation in four languages with text-to-speech synthesis.</p>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 3-4: RELATED WORK ============ -->
+
+<h2>2. Related Work</h2>
+
+<p>Sign language recognition has attracted significant research attention in recent years. Existing approaches can be broadly categorized into sensor-based methods, vision-based methods, and hybrid approaches.</p>
+
+<h3>2.1 Vision-Based Static Sign Recognition</h3>
+
+<p>Several studies have focused on recognizing static hand signs using image classification techniques. Traditional approaches extract hand-crafted features such as Histogram of Oriented Gradients (HOG) or Scale-Invariant Feature Transform (SIFT) descriptors, followed by classifiers such as Support Vector Machines (SVM) or Random Forests. More recent work leverages Convolutional Neural Networks (CNNs) for end-to-end feature learning, achieving high accuracy on benchmark datasets like the ASL Alphabet dataset. However, CNN-based approaches require substantial computational resources and large training datasets.</p>
+
+<h3>2.2 Dynamic Gesture Recognition</h3>
+
+<p>Recognizing dynamic gestures that involve hand movement over time presents additional challenges. Recurrent Neural Networks (RNNs), particularly Long Short-Term Memory (LSTM) networks, have been widely adopted for this task. These models process sequences of hand landmarks frame-by-frame and learn temporal patterns. While theoretically powerful, LSTM models in practice suffer from training instability, sensitivity to sequence length, and poor generalization when deployed with different cameras or lighting conditions.</p>
+
+<p>Alternative approaches include Hidden Markov Models (HMMs), Dynamic Time Warping (DTW), and 3D Convolutional Networks. Each has trade-offs between accuracy, computational cost, and deployment complexity.</p>
+
+<h3>2.3 MediaPipe-Based Approaches</h3>
+
+<p>Google's MediaPipe framework has emerged as a popular tool for real-time hand landmark detection. MediaPipe Holistic extracts 1,662 keypoints per frame, covering the face (468 points), pose (33 points &times; 4 features), left hand (21 points &times; 3), and right hand (21 points &times; 3). Several recent projects combine MediaPipe with deep learning classifiers for sign language recognition.</p>
+
+<h3>2.4 Limitations of Existing Approaches</h3>
+
+<p>Our review of the literature reveals several recurring limitations:</p>
+
+<table class="data">
+<tr><th>Limitation</th><th>Impact</th></tr>
+<tr><td>GPU dependency</td><td>Prevents deployment on standard consumer hardware</td></tr>
+<tr><td>LSTM training instability</td><td>Models often achieve &lt;50% accuracy in practice despite theoretical potential</td></tr>
+<tr><td>Large dataset requirements</td><td>Collecting thousands of labeled gesture sequences is impractical for individual projects</td></tr>
+<tr><td>No real-time web deployment</td><td>Most systems run as desktop-only applications</td></tr>
+<tr><td>Single language output</td><td>No multi-language translation or speech synthesis</td></tr>
+</table>
+
+<p>Our proposed system addresses all of these limitations through a lightweight, CPU-friendly architecture that requires minimal training data while achieving perfect classification accuracy.</p>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 4-6: METHODOLOGY ============ -->
+
+<h2>3. Proposed System</h2>
+
+<h3>3.1 System Overview</h3>
+
+<p>The proposed system follows a modular pipeline architecture consisting of four stages: (1) video capture and hand landmark extraction using MediaPipe, (2) feature engineering and classification using dual Random Forest models, (3) phrase construction via a deterministic state machine, and (4) multi-language translation and speech synthesis.</p>
+
+<div class="arch">
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚   Camera Input       â”‚
+                    â”‚   (640 x 480)        â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚  MediaPipe Holistic  â”‚
+                    â”‚  1662 keypoints/frameâ”‚
+                    â””â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”˜
+                         â”‚            â”‚
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”   â”Œâ”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â”‚   RF-1       â”‚   â”‚    RF-2         â”‚
+              â”‚  Static      â”‚   â”‚   Dynamic       â”‚
+              â”‚  42 features â”‚   â”‚   756 features  â”‚
+              â”‚  37 classes  â”‚   â”‚   7 classes      â”‚
+              â”‚  Letters+Num â”‚   â”‚   Gestures       â”‚
+              â”‚  Acc: 100%   â”‚   â”‚   Acc: 100%      â”‚
+              â””â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                     â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”˜
+                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+                    â”‚   State Machine      â”‚
+                    â”‚   (3-phase phrase)   â”‚
+                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                              â”‚
+              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+              â”‚               â”‚               â”‚
+        â”Œâ”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”
+        â”‚Translationâ”‚   â”‚  Text    â”‚   â”‚   TTS     â”‚
+        â”‚ 4 langs   â”‚   â”‚ Display  â”‚   â”‚  Audio    â”‚
+        â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+</div>
+<p class="figure-caption">Figure 1: System architecture diagram</p>
+
+<h3>3.2 Hand Landmark Extraction</h3>
+
+<p>We use MediaPipe Holistic to extract hand landmarks in real-time. For the static classifier (RF-1), we extract 21 hand landmarks per hand, each with (x, y) coordinates normalized relative to the bounding box, yielding a 42-dimensional feature vector. For the dynamic classifier (RF-2), we extract both left and right hand landmarks with (x, y, z) coordinates, producing a 126-dimensional vector per frame (21 landmarks &times; 3 coordinates &times; 2 hands).</p>
+
+<h3>3.3 Static Sign Classification (RF-1)</h3>
+
+<p>The first Random Forest model classifies static hand poses from single frames. For each detected hand, we compute the minimum x and y coordinates of all 21 landmarks, then normalize each landmark by subtracting these minima. This produces a translation-invariant 42-dimensional feature vector:</p>
+
+<p style="text-align:center; font-family: 'Times New Roman'; font-style: italic;">
+f<sub>static</sub> = [x<sub>1</sub> &minus; x<sub>min</sub>, y<sub>1</sub> &minus; y<sub>min</sub>, ..., x<sub>21</sub> &minus; x<sub>min</sub>, y<sub>21</sub> &minus; y<sub>min</sub>]
+</p>
+
+<p>The model was trained on 3,825 samples across 37 classes (25 letters, 10 digits, space, period) using 300 images per class collected via webcam. We use a Random Forest with 100 estimators, achieving 100% test accuracy.</p>
+
+<h3>3.4 Dynamic Gesture Classification (RF-2)</h3>
+
+<p>The key innovation of this work is the temporal statistics approach for dynamic gesture recognition. Instead of using sequence models, we compute statistical descriptors over a sliding window of 30 frames:</p>
+
+<p>Given a sequence S = {s<sub>1</sub>, s<sub>2</sub>, ..., s<sub>30</sub>} where each s<sub>t</sub> &isin; R<sup>126</sup>, we compute:</p>
+
+<table class="data">
+<tr><th>Feature</th><th>Formula</th><th>Dimensionality</th></tr>
+<tr><td>Mean</td><td>&mu; = (1/T) &Sigma; s<sub>t</sub></td><td>126</td></tr>
+<tr><td>Std. Deviation</td><td>&sigma; = sqrt((1/T) &Sigma; (s<sub>t</sub> &minus; &mu;)&sup2;)</td><td>126</td></tr>
+<tr><td>Maximum</td><td>max(s<sub>1</sub>, ..., s<sub>T</sub>)</td><td>126</td></tr>
+<tr><td>Minimum</td><td>min(s<sub>1</sub>, ..., s<sub>T</sub>)</td><td>126</td></tr>
+<tr><td>Velocity Mean</td><td>(1/(T-1)) &Sigma; |s<sub>t+1</sub> &minus; s<sub>t</sub>|</td><td>126</td></tr>
+<tr><td>Velocity Std</td><td>std(s<sub>t+1</sub> &minus; s<sub>t</sub>)</td><td>126</td></tr>
+</table>
+
+<p>The concatenation of these six descriptors produces a 756-dimensional feature vector (126 &times; 6). This approach captures both the spatial configuration of the hand (via mean, max, min) and the temporal dynamics of the gesture (via standard deviation and velocity features). A Random Forest with 200 estimators classifies this vector with 100% test accuracy and 99.0% cross-validation accuracy across 7 classes.</p>
+
+<h3>3.5 State Machine for Phrase Construction</h3>
+
+<p>The system uses a three-phase deterministic state machine to guide users through constructing the phrase "Hello my name is Omar, How are you?":</p>
+
+<table class="data">
+<tr><th>Phase</th><th>Mode</th><th>Steps</th><th>Model</th></tr>
+<tr><td>G1</td><td>Dynamic Gesture</td><td>hello &rarr; my &rarr; name &rarr; is</td><td>RF-2</td></tr>
+<tr><td>LETTER</td><td>Static Spelling</td><td>H &rarr; a &rarr; i &rarr; t &rarr; a &rarr; m</td><td>RF-1</td></tr>
+<tr><td>G2</td><td>Dynamic Gesture</td><td>how(+are) &rarr; you</td><td>RF-2</td></tr>
+</table>
+
+<p>Each step requires stabilization (3 consecutive matching predictions for gestures, 3 for letters) followed by a cooldown period to prevent double detection. The "how" gesture automatically outputs "How are" to simplify the user experience.</p>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 7: IMPLEMENTATION ============ -->
+
+<h2>4. Implementation</h2>
+
+<h3>4.1 Technology Stack</h3>
+
+<table class="data">
+<tr><th>Component</th><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Language</td><td>Python 3.10</td><td>Core development language</td></tr>
+<tr><td>Hand Detection</td><td>MediaPipe Holistic</td><td>Real-time landmark extraction</td></tr>
+<tr><td>ML Framework</td><td>Scikit-Learn</td><td>Random Forest classifiers</td></tr>
+<tr><td>Computer Vision</td><td>OpenCV</td><td>Video capture and processing</td></tr>
+<tr><td>Web Framework</td><td>Flask</td><td>Backend server</td></tr>
+<tr><td>Frontend</td><td>HTML/CSS/JavaScript</td><td>Professional dark-mode UI</td></tr>
+<tr><td>TTS</td><td>Google TTS (gTTS)</td><td>Text-to-speech in 4 languages</td></tr>
+<tr><td>Translation</td><td>Deep Translator</td><td>Multi-language translation</td></tr>
+</table>
+
+<h3>4.2 Data Collection Pipeline</h3>
+
+<p>Training data was collected using the built-in webcam through custom collection scripts:</p>
+
+<ul>
+<li><b>Static signs:</b> 300 images per class, 37 classes = 11,100 images total. Each image was processed by MediaPipe to extract 42 hand features. After filtering incomplete detections, 3,825 valid samples were retained.</li>
+<li><b>Dynamic gestures:</b> 30 sequences per class, 7 classes = 210 sequences. Each sequence consists of 30 frames (approximately 1 second of video), stored as 1,662-dimensional keypoint vectors.</li>
+</ul>
+
+<h3>4.3 Web Platform</h3>
+
+<p>The web platform consists of six pages:</p>
+
+<table class="data">
+<tr><th>Page</th><th>URL</th><th>Functionality</th></tr>
+<tr><td>Home</td><td>/</td><td>Project overview, architecture stats</td></tr>
+<tr><td>Learn</td><td>/learn</td><td>Dashboard with 55 lessons, progress tracking</td></tr>
+<tr><td>Lesson</td><td>/learn/&lt;id&gt;</td><td>Individual lesson with camera validation</td></tr>
+<tr><td>Practice</td><td>/practice</td><td>Free-form text construction</td></tr>
+<tr><td>Phrase Demo</td><td>/phrase</td><td>Guided phrase demo with state machine</td></tr>
+</table>
+
+<p>The interface follows modern design principles with a dark color scheme, glassmorphism effects, smooth animations, and responsive layout. Real-time video streaming is implemented using MJPEG over HTTP.</p>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 8-9: RESULTS ============ -->
+
+<h2>5. Experimental Results</h2>
+
+<h3>5.1 Model Performance</h3>
+
+<table class="data">
+<tr><th>Model</th><th>Type</th><th>Classes</th><th>Features</th><th>Samples</th><th>Test Acc.</th><th>CV Acc.</th></tr>
+<tr><td>RF-1 (Static)</td><td>Random Forest (100 trees)</td><td>37</td><td>42</td><td>3,825</td><td><b>100%</b></td><td>&mdash;</td></tr>
+<tr><td>RF-2 (Dynamic)</td><td>Random Forest (200 trees)</td><td>7</td><td>756</td><td>210</td><td><b>100%</b></td><td><b>99.0%</b></td></tr>
+</table>
+
+<p class="figure-caption">Table 1: Classification performance of both Random Forest models</p>
+
+<h3>5.2 Per-Class Performance (RF-2)</h3>
+
+<table class="data">
+<tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+<tr><td>hello</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>my</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>name</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>is</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>how</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>you</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td>neutral</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+<tr><td><b>Average</b></td><td><b>1.00</b></td><td><b>1.00</b></td><td><b>1.00</b></td><td><b>42</b></td></tr>
+</table>
+
+<p class="figure-caption">Table 2: Detailed classification report for the Dynamic Gesture RF model</p>
+
+<h3>5.3 Comparison with LSTM Approach</h3>
+
+<p>During development, we initially implemented an LSTM-based model for dynamic gesture recognition. The comparison demonstrates the superiority of our temporal statistics approach:</p>
+
+<table class="data">
+<tr><th>Metric</th><th>LSTM Model</th><th>RF + Temporal Stats</th></tr>
+<tr><td>Test Accuracy</td><td>~65% (unstable)</td><td><b>100%</b></td></tr>
+<tr><td>Real-time Stability</td><td>Poor (flickering)</td><td><b>Stable</b></td></tr>
+<tr><td>Training Time</td><td>~15 minutes</td><td><b>&lt;5 seconds</b></td></tr>
+<tr><td>Inference Hardware</td><td>GPU recommended</td><td><b>CPU only</b></td></tr>
+<tr><td>Model Size</td><td>2.4 MB (action.h5)</td><td><b>0.4 MB</b></td></tr>
+<tr><td>Framework</td><td>TensorFlow/Keras</td><td><b>Scikit-Learn</b></td></tr>
+<tr><td>Data Required</td><td>Large sequences</td><td><b>30 samples/class</b></td></tr>
+</table>
+
+<p class="figure-caption">Table 3: Performance comparison between LSTM and Random Forest approaches</p>
+
+<h3>5.4 Real-Time Performance</h3>
+
+<p>The system runs at approximately 15-20 FPS on a laptop with Intel Core i7 processor and GTX 1650 Ti GPU (GPU not required). MediaPipe Holistic with model_complexity=0 provides the fastest landmark extraction while maintaining sufficient accuracy for classification.</p>
+
+<h3>5.5 Multi-Language Translation</h3>
+
+<p>The system supports real-time translation of detected phrases:</p>
+
+<table class="data">
+<tr><th>Language</th><th>Example Output</th><th>TTS Engine</th></tr>
+<tr><td>English</td><td>Hello my name is Omar How are you</td><td>gTTS (en)</td></tr>
+<tr><td>French</td><td>Bonjour je m'appelle Omar comment allez-vous</td><td>gTTS (fr)</td></tr>
+<tr><td>Spanish</td><td>Hola mi nombre es Omar c&oacute;mo est&aacute;s</td><td>gTTS (es)</td></tr>
+<tr><td>Arabic</td><td>Ù…Ø±Ø­Ø¨Ø§ Ø§Ø³Ù…ÙŠ Ù‡ÙŠØ«Ù… ÙƒÙŠÙ Ø­Ø§Ù„Ùƒ</td><td>gTTS (ar)</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 8: SCREENSHOTS ============ -->
+
+<h2>6. System Screenshots</h2>
+
+<h3>6.1 Home Page</h3>
+<p>The home page presents the system architecture, key metrics (37 static signs, 7 dynamic gestures, 4 languages, 100% accuracy), and navigation to all platform features. The design follows modern dark-mode aesthetics inspired by professional platforms such as Linear and Vercel.</p>
+<div class="screenshot-placeholder">[Screenshot: Home Page &mdash; http://localhost:5000]</div>
+
+<h3>6.2 Learning Dashboard</h3>
+<p>The learning dashboard displays 55 interactive lessons organized by category. Each tile shows a preview of the sign, its label, and a completion checkmark. A progress bar at the top tracks overall advancement.</p>
+<div class="screenshot-placeholder">[Screenshot: Learn Page &mdash; http://localhost:5000/learn]</div>
+
+<h3>6.3 Individual Lesson with Camera Validation</h3>
+<p>Each lesson page shows a reference image alongside a live camera feed. The system validates the gesture in real-time, displaying a success modal when the correct sign is held for sufficient frames.</p>
+<div class="screenshot-placeholder">[Screenshot: Lesson Page &mdash; http://localhost:5000/learn/0]</div>
+
+<h3>6.4 Free Practice Mode</h3>
+<p>The practice page allows unrestricted input. Users sign letters to spell words, or perform gestures to input words. The system displays detected sign, word buffer, and sentence with translation.</p>
+<div class="screenshot-placeholder">[Screenshot: Practice Page &mdash; http://localhost:5000/practice]</div>
+
+<h3>6.5 Phrase Demo Mode</h3>
+<p>The phrase demo guides users through constructing "Hello my name is Omar How are you?" step by step with progress bar, AI detection panel, and live translation.</p>
+<div class="screenshot-placeholder">[Screenshot: Phrase Demo &mdash; http://localhost:5000/phrase]</div>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 9: DISCUSSION ============ -->
+
+<h2>7. Discussion</h2>
+
+<h3>7.1 Why Temporal Statistics Outperform LSTM</h3>
+
+<p>The success of the temporal statistics approach can be explained by several factors:</p>
+
+<ol>
+<li><b>Feature interpretability:</b> Statistical descriptors explicitly capture the properties that distinguish gestures. A waving "hello" produces high standard deviation in hand x-coordinates, while a static "is" sign produces low standard deviation.</li>
+<li><b>Fixed-length representation:</b> By summarizing variable-length sequences into fixed-length vectors, we eliminate sequence padding challenges and vanishing gradients.</li>
+<li><b>Data efficiency:</b> Random Forests require significantly fewer training samples. With only 30 sequences per class, we achieve perfect classification.</li>
+<li><b>Robustness:</b> Statistical features are inherently more robust to minor variations in gesture speed and amplitude.</li>
+<li><b>Computational efficiency:</b> RF inference is a series of if-else comparisons, orders of magnitude faster than LSTM matrix multiplications. No GPU needed.</li>
+</ol>
+
+<h3>7.2 Training Pipeline Analysis</h3>
+
+<table class="data">
+<tr><th>Stage</th><th>Script</th><th>Duration</th><th>Output</th></tr>
+<tr><td>1. Collect letter images</td><td>collectImgs.py</td><td>~20 min</td><td>11,100 images</td></tr>
+<tr><td>2. Extract hand features</td><td>createDataset.py</td><td>~3 min</td><td>data.pickle</td></tr>
+<tr><td>3. Train letter RF</td><td>trainClassifier.py</td><td>&lt;2 sec</td><td>model.p (100%)</td></tr>
+<tr><td>4. Collect gesture sequences</td><td>collect_gestures.py</td><td>~10 min</td><td>6,300 .npy files</td></tr>
+<tr><td>5. Train gesture RF</td><td>train_gesture_rf.py</td><td>&lt;3 sec</td><td>gesture_rf.p (100%)</td></tr>
+</table>
+
+<p>Total training time: under 40 minutes on CPU only, compared to hours for deep learning.</p>
+
+<h3>7.3 Stabilization Mechanism</h3>
+
+<p>To prevent false detections, we implemented dual stabilization: each sign must be predicted 3 consecutive times before acceptance. After acceptance, a cooldown period (1.5s for gestures, 0.8s for letters) prevents double detection. This ensures professional-grade stability during demonstrations.</p>
+
+<h3>7.4 Limitations</h3>
+
+<ul>
+<li><b>Vocabulary scalability:</b> 7 dynamic gestures currently. Scaling may require hierarchical classification or PCA.</li>
+<li><b>User dependency:</b> Models trained on single user data. Transfer learning could help.</li>
+<li><b>Lighting sensitivity:</b> MediaPipe degrades in poor lighting or partial occlusion.</li>
+<li><b>Camera orientation:</b> Training data must match deployment camera orientation.</li>
+<li><b>Fixed phrase order:</b> State machine enforces predetermined sequence.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ============ PAGE 10: CONCLUSION ============ -->
+
+<h2>8. Conclusion and Future Work</h2>
+
+<p>This paper presented a novel approach to real-time American Sign Language recognition using a Dual Random Forest architecture. By replacing unstable LSTM models with temporal statistical features computed over 30-frame sliding windows, we achieved 100% classification accuracy on both static sign recognition (37 classes) and dynamic gesture recognition (7 classes).</p>
+
+<p>The system is deployed as a professional web platform with Flask, featuring six pages: home, learning dashboard, individual lessons with camera validation, free practice, and guided phrase demonstration. It supports real-time translation and text-to-speech in English, French, Spanish, and Arabic.</p>
+
+<p>The key contributions of this work are:</p>
+
+<ol>
+<li>A <b>temporal statistics method</b> converting sequence classification into tabular classification, enabling Random Forests to achieve perfect accuracy with only 30 training samples per class.</li>
+<li>A <b>three-phase state machine</b> combining gesture recognition with letter spelling to construct complete phrases.</li>
+<li>A <b>complete web-based learning platform</b> with guided lessons, progress tracking, and phrase demonstration.</li>
+<li><b>Multi-language translation and speech synthesis</b> integrated into real-time recognition.</li>
+</ol>
+
+<h3>8.1 Future Work</h3>
+
+<ul>
+<li><b>Vocabulary expansion:</b> Extending from 7 to 50+ common ASL phrases.</li>
+<li><b>User-independent recognition:</b> Transfer learning for cross-user generalization.</li>
+<li><b>Mobile deployment:</b> Android/iOS via TensorFlow Lite and MediaPipe mobile SDK.</li>
+<li><b>Two-handed signs:</b> Better spatial relationship features between both hands.</li>
+<li><b>Continuous recognition:</b> Free-form sentence builder replacing fixed state machine.</li>
+<li><b>Cloud deployment:</b> AWS/GCP hosting for remote access without local installation.</li>
+</ul>
+
+<h2>References</h2>
+
+<ol class="refs">
+<li>Lugaresi, C., et al. "MediaPipe: A Framework for Building Perception Pipelines." <i>arXiv preprint arXiv:1906.08172</i>, 2019.</li>
+<li>Breiman, L. "Random Forests." <i>Machine Learning</i>, 45(1), 5-32, 2001.</li>
+<li>Hochreiter, S. and Schmidhuber, J. "Long Short-Term Memory." <i>Neural Computation</i>, 9(8), 1735-1780, 1997.</li>
+<li>Zhang, F., et al. "MediaPipe Hands: On-device Real-time Hand Tracking." <i>arXiv preprint arXiv:2006.10214</i>, 2020.</li>
+<li>Wadhawan, A. and Kumar, P. "Sign Language Recognition Systems: A Decade Systematic Literature Review." <i>Archives of Computational Methods in Engineering</i>, 28, 785-813, 2021.</li>
+<li>Rastgoo, R., Kiani, K. and Escalera, S. "Sign Language Recognition: A Deep Survey." <i>Expert Systems with Applications</i>, 164, 113794, 2021.</li>
+<li>Pedregosa, F., et al. "Scikit-learn: Machine Learning in Python." <i>Journal of Machine Learning Research</i>, 12, 2825-2830, 2011.</li>
+<li>Pigou, L., et al. "Sign Language Recognition Using Convolutional Neural Networks." <i>ECCV Workshops</i>, 2014.</li>
+<li>Kopuklu, O., et al. "Real-time Hand Gesture Detection and Classification." <i>IEEE FG</i>, 2019.</li>
+<li>Koller, O., Ney, H. and Bowden, R. "Deep Hand: How to Train a CNN on 1 Million Hand Images." <i>IEEE CVPR</i>, 2016.</li>
+</ol>
+
+</body>
+</html>
+

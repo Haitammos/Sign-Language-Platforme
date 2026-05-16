@@ -532,3 +532,44 @@ body {
     .controls-row { flex-wrap: wrap; }
     .controls-row .ctrl-btn { min-width: calc(50% - 4px); }
 }
+
+/* ============================================================
+   PHRASE DEMO PAGE
+   ============================================================ */
+.phrase-header {
+    text-align: center; margin-bottom: 2rem;
+}
+.phrase-title {
+    font-size: 1.75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+.phrase-subtitle {
+    color: var(--text-1); margin-top: 8px; font-size: 0.95rem;
+}
+
+.mode-badge {
+    margin-left: auto; padding: 3px 12px;
+    border-radius: 999px; font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+}
+.mode-badge.mode-gesture { background: rgba(234,179,8,0.15); color: var(--amber); }
+.mode-badge.mode-letter  { background: rgba(99,102,241,0.15); color: var(--accent-h); }
+
+.phrase-progress-bar {
+    height: 8px; background: var(--bg-3);
+    border-radius: 999px; overflow: hidden;
+}
+.phrase-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 999px; transition: width 0.4s ease;
+}
+.phrase-progress-text {
+    text-align: center; font-size: 0.75rem; color: var(--text-2); margin-top: 6px;
+}
+
+.phrase-complete-panel {
+    background: rgba(34,197,94,0.06);
+    border: 1px solid rgba(34,197,94,0.2);
+    animation: modalIn 0.4s ease;
+}

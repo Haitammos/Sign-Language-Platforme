@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Phrase Demo — SignLingua{% endblock %}
+{% block nav_practice %}{% endblock %}
+
+{% block content %}
+<div class="practice-page">
+    <div class="phrase-header">
+        <h1 class="phrase-title">
+            <i data-lucide="message-circle" style="width:32px;height:32px;margin-right:12px;color:var(--accent)"></i>
+            Phrase Demo
+        </h1>
+        <p class="phrase-subtitle">Sign the complete phrase: <strong>"Hello my name is Omar. How are you?"</strong></p>
+    </div>
+
+    <div class="practice-grid">
+        <!-- Video Column -->
+        <div class="practice-left">
+            <div class="panel video-panel">
+                <div class="panel-header">
+                    <i data-lucide="video" class="panel-icon"></i>
+                    <span>Live Feed</span>
+                    <span id="phrase-mode-badge" class="mode-badge">GESTURE</span>
+                </div>
+                <div class="video-feed-wrapper">
+                    <img id="phrase-video" src="/video_feed_phrase" alt="Camera Feed">
+                </div>
+            </div>
+            <div class="controls-row">
+                <button class="ctrl-btn ctrl-danger" onclick="phraseCommand('reset')" title="Restart">
+                    <i data-lucide="rotate-ccw"></i><span>Restart</span>
+                </button>
+                <button class="ctrl-btn ctrl-warn" onclick="phraseCommand('delete')" title="Delete last">
+                    <i data-lucide="delete"></i><span>Delete</span>
+                </button>
+                <button class="ctrl-btn ctrl-success" onclick="phraseCommand('speak')" title="Speak phrase">
+                    <i data-lucide="volume-2"></i><span>Speak</span>
+                </button>
+                <button class="ctrl-btn ctrl-neutral" id="phrase-cam-btn" onclick="togglePhraseCamera()" title="Camera On/Off">
+                    <i data-lucide="video-off"></i><span>Camera</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="practice-right">
+            <!-- Language -->
+            <div class="panel lang-panel">
+                <div class="panel-header">
+                    <i data-lucide="globe" class="panel-icon"></i>
+                    <span>Translation Language</span>
+                </div>
+                <div class="lang-grid">
+                    <button class="lang-opt active" data-lang="English" onclick="phraseSetLang(this)">English</button>
+                    <button class="lang-opt" data-lang="French" onclick="phraseSetLang(this)">Français</button>
+                    <button class="lang-opt" data-lang="Spanish" onclick="phraseSetLang(this)">Español</button>
+                    <button class="lang-opt" data-lang="Arabic" onclick="phraseSetLang(this)">العربية</button>
+                </div>
+            </div>
+
+            <!-- Current Step -->
+            <div class="panel data-panel">
+                <div class="data-label">Current Step</div>
+                <div class="data-value data-accent" id="phrase-step" style="font-size:1.3rem">—</div>
+            </div>
+
+            <!-- Detection -->
+            <div class="panel data-panel">
+                <div class="data-label">AI Detection</div>
+                <div class="data-value data-warm" id="phrase-detection">—</div>
+            </div>
+
+            <!-- Progress -->
+            <div class="panel data-panel">
+                <div class="data-label">Progress</div>
+                <div style="width:100%;margin-top:8px">
+                    <div class="phrase-progress-bar">
+                        <div class="phrase-progress-fill" id="phrase-progress" style="width:0%"></div>
+                    </div>
+                    <div class="phrase-progress-text" id="phrase-progress-text">0 / 12</div>
+                </div>
+            </div>
+
+            <!-- Built Phrase -->
+            <div class="panel data-panel data-panel-grow">
+                <div class="data-label">Constructed Phrase</div>
+                <div class="data-value data-green data-sentence" id="phrase-output" style="font-size:1.2rem;min-height:60px">—</div>
+            </div>
+
+            <!-- Translation -->
+            <div class="panel data-panel">
+                <div class="data-label">Translation</div>
+                <div class="data-value data-warm" id="phrase-translation" style="font-size:1.1rem">—</div>
+            </div>
+
+            <!-- Complete Banner -->
+            <div class="panel phrase-complete-panel" id="phrase-complete" style="display:none">
+                <div style="text-align:center">
+                    <i data-lucide="check-circle" style="width:48px;height:48px;color:#22c55e;margin-bottom:12px"></i>
+                    <h2 style="color:#22c55e;margin:0 0 8px">Phrase Complete!</h2>
+                    <p style="color:#a0a0a0;margin:0" id="phrase-complete-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let phraseLanguage = 'English';
+
+function phraseSetLang(btn) {
+    document.querySelectorAll('.lang-opt').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    phraseLanguage = btn.dataset.lang;
+    phraseCommand('language', {language: phraseLanguage});
+}
+
+async function phraseCommand(action, extra = {}) {
+    try {
+        await fetch('/phrase_command', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({action, ...extra})
+        });
+        if (action === 'reset') {
+            document.getElementById('phrase-complete').style.display = 'none';
+        }
+    } catch(e) {}
+}
+
+function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el && el.textContent !== val) {
+        el.textContent = val;
+        el.classList.add('flash');
+        setTimeout(() => el.classList.remove('flash'), 250);
+    }
+}
+
+setInterval(async () => {
+    try {
+        const res = await fetch('/phrase_state');
+        const d = await res.json();
+
+        setVal('phrase-step', d.current_step || '—');
+        setVal('phrase-detection', d.detection || '—');
+        setVal('phrase-output', d.phrase || '—');
+        setVal('phrase-translation', d.translation || '—');
+
+        const badge = document.getElementById('phrase-mode-badge');
+        badge.textContent = d.mode || 'GESTURE';
+        badge.className = 'mode-badge mode-' + (d.mode || 'gesture').toLowerCase();
+
+        const total = d.total || 12;
+        const done = d.done || 0;
+        document.getElementById('phrase-progress').style.width = (done/total*100) + '%';
+        setVal('phrase-progress-text', done + ' / ' + total);
+
+        if (d.complete) {
+            const cp = document.getElementById('phrase-complete');
+            cp.style.display = 'block';
+            document.getElementById('phrase-complete-text').textContent = d.phrase;
+            lucide.createIcons();
+        }
+    } catch(e) {}
+}, 200);
+
+let phraseCamOn = true;
+function togglePhraseCamera() {
+    const vid = document.getElementById('phrase-video');
+    const btn = document.getElementById('phrase-cam-btn');
+    phraseCamOn = !phraseCamOn;
+    if (phraseCamOn) {
+        vid.src = '/video_feed_phrase';
+        btn.querySelector('span').textContent = 'Camera';
+    } else {
+        vid.src = '';
+        btn.querySelector('span').textContent = 'Start';
+    }
+    lucide.createIcons();
+}
+</script>
+{% endblock %}

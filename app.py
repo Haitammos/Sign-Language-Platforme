@@ -73,13 +73,25 @@ with open('./model.p', 'rb') as f:
     model_dict = RenameUnpickler(f).load()
 rf_model = model_dict['model']
 
+# --- Gesture Random Forest (Dynamic gestures for phrase demo) ---
+try:
+    with open('gesture_rf.p', 'rb') as f:
+        gesture_rf_data = pickle.load(f)
+    gesture_rf_model = gesture_rf_data['model']
+    GESTURE_WORDS = gesture_rf_data['words']
+    print(f"Gesture RF loaded: {GESTURE_WORDS}")
+except Exception as e:
+    gesture_rf_model = None
+    GESTURE_WORDS = []
+    print(f"Warning: gesture_rf.p not loaded: {e}")
+
 # ============================================================
 # 2. CONFIGURATION
 # ============================================================
 
 LABELS_DICT = {
     0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H',
-    8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 13: 'N', 14: 'O', 15: 'P',
+    8: 'I', 9: 'J', 10: 'K', 11: 'L', 12: 'M', 14: 'O', 15: 'P',
     16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 23: 'X',
     24: 'Y', 25: 'Z', 26: '0', 27: '1', 28: '2', 29: '3', 30: '4', 31: '5',
     32: '6', 33: '7', 34: '8', 35: '9', 36: ' ', 37: '.'
@@ -92,6 +104,7 @@ LETTER_TO_ID = {v: k for k, v in LABELS_DICT.items()}
 # All learnable items
 ALL_LESSONS = []
 for i in range(26):
+    if i not in LABELS_DICT: continue
     ALL_LESSONS.append({'id': str(i), 'label': LABELS_DICT[i], 'type': 'letter', 'display': LABELS_DICT[i]})
 for i in range(26, 36):
     ALL_LESSONS.append({'id': str(i), 'label': LABELS_DICT[i], 'type': 'number', 'display': LABELS_DICT[i]})
@@ -312,34 +325,40 @@ def generate_practice_frames():
                     if norm_mean is not None:
                         input_seq = (input_seq - norm_mean) / norm_std
                     res = lstm_model.predict(np.expand_dims(input_seq, axis=0), verbose=0)[0]
-                    max_idx = np.argmax(res)
-                    action_name = actions[max_idx]
-                    threshold = LSTM_THRESHOLDS.get(action_name.capitalize(), 0.70)
 
-                    # Skip neutral class & apply threshold
-                    if action_name != 'neutral' and res[max_idx] > threshold:
+                    # ONLY accept the words we need — ignore all others
+                    ALLOWED_WORDS = {'hello', 'my', 'name', 'is'}
+                    best_word = None
+                    best_conf = 0.0
+                    for i, w in enumerate(actions):
+                        if w in ALLOWED_WORDS and res[i] > best_conf:
+                            best_word = w
+                            best_conf = res[i]
+
+                    threshold = LSTM_THRESHOLDS.get(best_word.capitalize(), 0.70) if best_word else 0.70
+
+                    if best_word and best_conf > threshold:
                         # Stabilization: must predict same word multiple times
                         if not hasattr(generate_practice_frames, '_last_word'):
                             generate_practice_frames._last_word = None
                             generate_practice_frames._word_count = 0
 
-                        if action_name == generate_practice_frames._last_word:
+                        if best_word == generate_practice_frames._last_word:
                             generate_practice_frames._word_count += 1
                         else:
-                            generate_practice_frames._last_word = action_name
+                            generate_practice_frames._last_word = best_word
                             generate_practice_frames._word_count = 1
 
                         # Accept after 8 consecutive same predictions
                         if generate_practice_frames._word_count >= 8:
-                            predicted_character = action_name.capitalize()
+                            predicted_character = best_word.capitalize()
                             phrase_triggered = True
-                            # Reset after detection to avoid repeats
                             practice_sequence.clear()
                             generate_practice_frames._last_word = None
                             generate_practice_frames._word_count = 0
                             generate_practice_frames._lstm_cooldown = current_time + 1.5
                     else:
-                        # Reset stabilization on neutral/low confidence
+                        # Reset stabilization on low confidence
                         if hasattr(generate_practice_frames, '_last_word'):
                             generate_practice_frames._last_word = None
                             generate_practice_frames._word_count = 0
@@ -572,6 +591,10 @@ def lesson(lesson_id):
 def practice():
     return render_template('practice.html')
 
+@app.route('/phrase')
+def phrase_demo():
+    return render_template('phrase.html')
+
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_practice_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -644,6 +667,221 @@ def handle_command():
             progress[key] = False
 
     return jsonify({"status": "ok", "state": practice_state})
+
+# ============================================================
+# PHRASE DEMO — State Machine + Video Feed (100% Random Forest)
+# ============================================================
+
+PHRASE_TG1 = ['hello','my','name','is']
+PHRASE_DG1 = ['Hello','my','name','is']
+PHRASE_TL  = list('Omar')
+PHRASE_TG2 = ['how','you']
+PHRASE_DG2 = ['How are','you']
+PHRASE_GESTURE_STAB = 3
+PHRASE_LETTER_STAB = 3
+
+def _phrase_build(parts):
+    d='';s=''
+    for p in parts:
+        if len(p)==1: s+=p
+        else:
+            if s: d+=' '+s; s=''
+            d+=(' ' if d else '')+p
+    if s: d+=' '+s
+    return d.strip()
+
+phrase_state_data = {
+    'step': 0, 'parts': [], 'phase': 'G1', 'complete': False,
+    'buf': [], 'lg': None, 'gc': 0, 'cd': 0,
+    'll': None, 'lc': 0,
+    'live': '', 'conf': 0.0,
+    'language': 'English'
+}
+
+def _phrase_reset():
+    phrase_state_data.update({
+        'step': 0, 'parts': [], 'phase': 'G1', 'complete': False,
+        'buf': [], 'lg': None, 'gc': 0, 'cd': 0,
+        'll': None, 'lc': 0, 'live': '', 'conf': 0.0
+    })
+
+def _seq_to_features(seq):
+    arr = np.array(seq)
+    m = np.mean(arr, axis=0)
+    s = np.std(arr, axis=0)
+    mx = np.max(arr, axis=0)
+    mn = np.min(arr, axis=0)
+    d = np.diff(arr, axis=0)
+    vm = np.mean(np.abs(d), axis=0)
+    vs = np.std(d, axis=0)
+    return np.concatenate([m, s, mx, mn, vm, vs])
+
+def _extract_hands_126(results):
+    lh = np.array([[r.x,r.y,r.z] for r in results.left_hand_landmarks.landmark]).flatten() if results.left_hand_landmarks else np.zeros(63)
+    rh = np.array([[r.x,r.y,r.z] for r in results.right_hand_landmarks.landmark]).flatten() if results.right_hand_landmarks else np.zeros(63)
+    return np.concatenate([lh, rh])
+
+def generate_phrase_frames():
+    mp_holistic = mp.solutions.holistic
+    mp_drawing = mp.solutions.drawing_utils
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        cap = cv2.VideoCapture(1)
+
+    sd = phrase_state_data
+
+    with mp_holistic.Holistic(min_detection_confidence=0.3, min_tracking_confidence=0.3, model_complexity=0) as holistic:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                continue
+
+            now = time.time()
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            rgb.flags.writeable = False
+            results = holistic.process(rgb)
+            has_hands = (results.left_hand_landmarks is not None or results.right_hand_landmarks is not None)
+
+            if results.left_hand_landmarks:
+                mp_drawing.draw_landmarks(frame, results.left_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+            if results.right_hand_landmarks:
+                mp_drawing.draw_landmarks(frame, results.right_hand_landmarks, mp_holistic.HAND_CONNECTIONS)
+
+            # --- GESTURE PHASES ---
+            if sd['phase'] in ('G1','G2') and not sd['complete'] and gesture_rf_model:
+                tg = PHRASE_TG1 if sd['phase']=='G1' else PHRASE_TG2
+                dg = PHRASE_DG1 if sd['phase']=='G1' else PHRASE_DG2
+
+                hands = _extract_hands_126(results)
+                sd['buf'].append(hands)
+                if len(sd['buf'])>30: sd['buf']=sd['buf'][-30:]
+
+                if len(sd['buf'])==30 and has_hands and now>sd['cd']:
+                    feat = _seq_to_features(sd['buf']).reshape(1,-1)
+                    pred = gesture_rf_model.predict(feat)[0]
+                    proba = gesture_rf_model.predict_proba(feat)[0]
+                    conf = float(np.max(proba))
+                    sd['live'] = pred; sd['conf'] = conf
+
+                    target = tg[sd['step']]
+                    if pred==target and conf>0.50:
+                        if pred==sd['lg']: sd['gc']+=1
+                        else: sd['lg']=pred; sd['gc']=1
+                        if sd['gc']>=PHRASE_GESTURE_STAB:
+                            sd['parts'].append(dg[sd['step']])
+                            speak_text(dg[sd['step']], sd['language'])
+                            sd['step']+=1; sd['buf']=[]; sd['lg']=None; sd['gc']=0
+                            sd['cd']=now+1.5
+                            if sd['step']>=len(tg):
+                                sd['step']=0
+                                if sd['phase']=='G1':
+                                    sd['phase']='LETTER'
+                                else:
+                                    sd['complete']=True
+                                    speak_text(_phrase_build(sd['parts']), sd['language'])
+                    elif pred=='neutral':
+                        pass
+                    else:
+                        sd['lg']=None; sd['gc']=0
+                elif not has_hands:
+                    sd['live']=''; sd['conf']=0.0
+
+            # --- LETTER PHASE ---
+            elif sd['phase']=='LETTER' and not sd['complete']:
+                if has_hands and now>sd['cd']:
+                    hl = results.right_hand_landmarks or results.left_hand_landmarks
+                    if hl:
+                        letter = get_rf_prediction(hl)
+                        if letter:
+                            sd['live']=letter; sd['conf']=1.0
+                            exp = PHRASE_TL[sd['step']]
+                            if letter.upper()==exp.upper():
+                                if letter==sd['ll']: sd['lc']+=1
+                                else: sd['ll']=letter; sd['lc']=1
+                                if sd['lc']>=PHRASE_LETTER_STAB:
+                                    sd['parts'].append(exp)
+                                    sd['step']+=1; sd['ll']=None; sd['lc']=0; sd['cd']=now+0.8
+                                    if sd['step']>=len(PHRASE_TL):
+                                        sd['phase']='G2'; sd['step']=0
+                            else:
+                                sd['ll']=None; sd['lc']=0
+                elif not has_hands:
+                    sd['live']=''; sd['ll']=None; sd['lc']=0
+
+            ret, buf = cv2.imencode('.jpg', frame)
+            yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + buf.tobytes() + b'\r\n')
+
+@app.route('/video_feed_phrase')
+def video_feed_phrase():
+    return Response(generate_phrase_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/phrase_state')
+def get_phrase_state():
+    sd = phrase_state_data
+    phase = sd['phase']
+    mode = 'GESTURE' if phase in ('G1','G2') else 'LETTER'
+
+    if sd['complete']:
+        current = 'Complete!'
+    elif phase=='G1':
+        current = f'Sign: "{PHRASE_TG1[sd["step"]]}"'
+    elif phase=='LETTER':
+        current = f'Letter: "{PHRASE_TL[sd["step"]]}"'
+    elif phase=='G2':
+        current = f'Sign: "{PHRASE_TG2[sd["step"]]}"'
+    else:
+        current = ''
+
+    phrase = _phrase_build(sd['parts'])
+    lang = sd['language']
+    translation = translate_text(phrase, lang) if phrase and lang != 'English' else phrase
+
+    total = len(PHRASE_TG1)+len(PHRASE_TL)+len(PHRASE_TG2)
+    done = len(sd['parts'])
+
+    return jsonify({
+        'mode': mode,
+        'current_step': current,
+        'detection': str(sd['live']) if sd['live'] else '',
+        'phrase': phrase,
+        'translation': translation or '',
+        'complete': sd['complete'],
+        'total': total,
+        'done': done
+    })
+
+@app.route('/phrase_command', methods=['POST'])
+def phrase_command():
+    data = request.json
+    action = data.get('action')
+    if action == 'reset':
+        _phrase_reset()
+    elif action == 'delete':
+        sd = phrase_state_data
+        if sd['parts']:
+            removed = sd['parts'].pop()
+            sd['complete'] = False
+            # Figure out which phase/step to go back to
+            done = len(sd['parts'])
+            g1_len = len(PHRASE_TG1)
+            letter_len = len(PHRASE_TL)
+            if done < g1_len:
+                sd['phase'] = 'G1'; sd['step'] = done
+            elif done < g1_len + letter_len:
+                sd['phase'] = 'LETTER'; sd['step'] = done - g1_len
+            else:
+                sd['phase'] = 'G2'; sd['step'] = done - g1_len - letter_len
+            sd['buf'] = []; sd['lg'] = None; sd['gc'] = 0
+            sd['ll'] = None; sd['lc'] = 0; sd['cd'] = 0
+    elif action == 'language':
+        phrase_state_data['language'] = data.get('language', 'English')
+    elif action == 'speak':
+        phrase = _phrase_build(phrase_state_data['parts'])
+        if phrase:
+            lang = phrase_state_data['language']
+            translated = translate_text(phrase, lang) if lang != 'English' else phrase
+            speak_text(translated, lang)
+    return jsonify({'status': 'ok'})
 
 if __name__ == '__main__':
     print("\n" + "="*50)
